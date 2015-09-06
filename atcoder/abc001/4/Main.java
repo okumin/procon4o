@@ -22,47 +22,44 @@ class Main {
             Pair p = new Pair(Integer.parseInt(se[0]), Integer.parseInt(se[1]));
             rains[i] = p;
         }
-        List<Pair> result = solve(rains);
-        for (Pair p : result) {
-            System.out.println(String.format("%04d-%04d", p.s, p.e));
+        solve(rains);
+    }
+
+    public static void solve(Pair[] rains) {
+        int[] result = new int[normalize(2400) + 1];
+        for (Pair p : rains) {
+            int ns = normalize(p.s);
+            int s = ns - ns % 5;
+            result[s] = result[s] + 1;
+
+            int ne = normalize(p.e);
+            int e = ne + (5 - ne % 5) % 5;
+            result[e] = result[e] - 1;
+        }
+        int sum = 0;
+        boolean on = false;
+        for (int i = 0; i < result.length; i++) {
+            sum += result[i];
+            if (on && sum == 0) {
+                System.out.println(String.format("%04d", denormalize(i)));
+                on = false;
+            } else if (!on && sum > 0) {
+                System.out.print(String.format("%04d-", denormalize(i)));
+                on = true;
+            }
         }
     }
 
-    public static List<Pair> solve(Pair[] rains) {
-        rains = normalize(rains);
-        ArrayList<Pair> result = new ArrayList<Pair>();
-        result.add(rains[0]);
-        for (int i = 1; i < rains.length; i++) {
-            Pair rain = rains[i];
-            int index = result.size() - 1;
-            Pair top = result.get(index);
-            if (rain.s <= top.e) {
-                result.set(index, new Pair(top.s, Math.max(top.e, rain.e)));
-            } else {
-                result.add(rain);
-            }
-        }
-        return result;
+    public static int normalize(int x) {
+        int hour = x / 100;
+        int minutes = x % 100;
+        return hour * 60 + minutes;
     }
 
-    public static Pair[] normalize(Pair[] rains) {
-        for (int i = 0; i < rains.length; i++) {
-            Pair rain = rains[i];
-            int s = rain.s;
-            int e = rain.e;
-            int start = s - s % 5;
-            int end = e + (5 - e % 5) % 5;
-            if ((end - 60) % 100 == 0) {
-                end = end - 60 + 100;
-            }
-            rains[i] = new Pair(start, end);
-        }
-        Arrays.sort(rains, new Comparator<Pair>() {
-            public int compare(Pair a, Pair b) {
-                return a.s - b.s;
-            }
-        });
-        return rains;
+    public static int denormalize(int x) {
+        int minutes = x % 60;
+        int hour = (x - minutes) / 60;
+        return hour * 100 + minutes;
     }
 }
 
